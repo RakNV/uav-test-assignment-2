@@ -27,6 +27,8 @@ def pixel_to_meter_shift(
     """
     dx = (point_px[0] - center_px[0]) * scale
     dy = (point_px[1] - center_px[1]) * scale
+    print(f"[1] Pixel shift: Δx = {point_px[0] - center_px[0]}, Δy = {point_px[1] - center_px[1]}")
+    print(f"[2] Converted to meters: dx = {dx:.4f} m, dy = {dy:.4f} m")
     return dx, dy
 
 
@@ -45,9 +47,11 @@ def project_shift(
     """
     azimuth_right = (azimuth + RIGHT_ANGLE_DEG) % FULL_CIRCLE_DEG
     azimuth_down = (azimuth + HALF_CIRCLE_DEG) % FULL_CIRCLE_DEG
+    print(f"[3] Projected azimuths: right = {azimuth_right}°, down = {azimuth_down}°")
 
     east = dx * math.sin(math.radians(azimuth_right)) + dy * math.sin(math.radians(azimuth_down))
     north = dx * math.cos(math.radians(azimuth_right)) + dy * math.cos(math.radians(azimuth_down))
+    print(f"[4] Projected shift to geographic coordinates: east = {east:.4f} m, north = {north:.4f} m")
 
     return east, north
 
@@ -68,6 +72,7 @@ def meter_shift_to_geo_shift(
     delta_lat = north / EARTH_RADIUS_M
     lat_rad = math.radians(float(lat))
     delta_lon = east / (EARTH_RADIUS_M * math.cos(lat_rad))
+    print(f"[5] Converted to geographic shift: Δlat = {delta_lat:.8f}°, Δlon = {delta_lon:.8f}°")
     return delta_lat, delta_lon
 
 
@@ -86,7 +91,10 @@ def apply_geo_shift(
     :param dlon: Longitude shift in degrees.
     :return: Tuple (new_lat, new_lon) in decimal degrees.
     """
-    return lat - Decimal(str(dlat)), lon - Decimal(str(dlon))
+    new_lat = lat - Decimal(str(dlat))
+    new_lon = lon - Decimal(str(dlon))
+    print(f"[6] Final coordinates after shift: lat = {new_lat}, lon = {new_lon}")
+    return new_lat, new_lon
 
 
 def calculate_image_center_coordinates(
@@ -114,11 +122,18 @@ def calculate_image_center_coordinates(
 
 
 def main() -> None:
+    print("=== Computing image center coordinates step-by-step ===")
     point_coord = (Decimal('50.603694'), Decimal('30.650625'))
     azimuth = 335
     center_px = (320, 256)
     point_px = (558, 328)
     scale = 0.38
+    print(f"[0] Input data:\n"
+          f"- Known point coordinates: {point_coord}\n"
+          f"- Azimuth: {azimuth}°\n"
+          f"- Image center (px): {center_px}\n"
+          f"- Known point (px): {point_px}\n"
+          f"- Pixel scale: {scale} m/pixel\n")
 
     center_lat, center_lon = calculate_image_center_coordinates(
         point_coord=point_coord,
